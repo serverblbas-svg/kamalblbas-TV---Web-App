@@ -82,15 +82,15 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/video.js/8.10.0/video.min.js"></script>
 
     <script>
-        // بەستەرە ڕەسەنەکەت
-        const TARGET_URL = "https://xtream-ie.net/get.php?username=iptv2026&password=iptv2026&type=m3u_plus";
-        
-        // بەکارهێنانی پڕۆکسی allorigins بۆ تێپەڕاندنی بلۆککردنی CORS بە شێوازێکی ئۆتۆماتیکی
-        const M3U_URL = "https://api.allorigins.win/raw?url=" + encodeURIComponent(TARGET_URL);
+        // بەستەرە ڕەسەنەکانی خۆت بەبێ هیچ پڕۆکسییەک
+        const M3U_URL = "https://xtream-ie.net/get.php?username=iptv2026&password=iptv2026&type=m3u_plus";
+        const EPG_URL = "https://xtream-ie.net/xmltv.php?username=iptv2026&password=iptv2026";
 
+        // ڕێکخستنی لێدەرەکە
         const player = videojs('tv-player', { fluid: true, autoplay: false, liveui: true });
         const listContainer = document.getElementById('channels-list');
 
+        // نەخشەیەک بۆ خوێندنەوە و جیاکردنەوەی فایلی M3U
         function parseM3U(data) {
             const lines = data.split('\n');
             const channels = [];
@@ -111,6 +111,7 @@
                     }
                     
                     if (url) {
+                        // لێرەدا .push بەکارهاتووە کە دروستەکەیە بۆ ئەڕەی لە جاڤاسکریپتدا
                         channels.push({ name: name, url: url });
                     }
                 }
@@ -118,10 +119,11 @@
             return channels;
         }
 
+        // هێنانی داتا لە ڕێگەی ئینتەرنێتەوە (Fetch)
         fetch(M3U_URL)
             .then(response => {
                 if (!response.ok) {
-                    throw new Error("کێشەیەک لە بارکردنی پڕۆکسی هەیە");
+                    throw new Error("Server Error");
                 }
                 return response.text();
             })
@@ -161,7 +163,7 @@
                 }
             })
             .catch(err => {
-                listContainer.innerText = "خەتا لە هێنانی داتا: " + err.message;
+                listContainer.innerText = "خەتا لە هێنانی فایلەکە: " + err.message;
                 console.error(err);
             });
     </script>
