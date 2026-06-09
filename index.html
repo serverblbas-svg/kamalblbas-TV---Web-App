@@ -50,6 +50,7 @@
             font-size: 16px;
             transition: all 0.2s ease;
             display: inline-block;
+            text-align: right;
         }
         .channel-btn:hover, .channel-btn.active {
             background: #00d2ff;
@@ -60,6 +61,18 @@
         .loading {
             color: #aaa;
             font-style: italic;
+        }
+        .ch-num {
+            color: #00d2ff;
+            font-weight: bold;
+            margin-left: 8px;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 20px 6px;
+            border-radius: 4px;
+        }
+        .channel-btn.active .ch-num {
+            color: #11141a;
+            background: rgba(255, 255, 255, 0.5);
         }
     </style>
 </head>
@@ -82,15 +95,15 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/video.js/8.10.0/video.min.js"></script>
 
     <script>
-        // پێناسەکردنی بەستەری M3U بە شێوەی دەقی دروست
         const M3U_URL = "https://xtream-ie.net/get.php?username=iptv2026&password=iptv2026&type=m3u_plus";
         const EPG_URL = "https://xtream-ie.net/xmltv.php?username=iptv2026&password=iptv2026";
 
-        // ڕێکخستنی لێدەرەکە
         const player = videojs('tv-player', { fluid: true, autoplay: false, liveui: true });
         const listContainer = document.getElementById('channels-list');
+        
+        let globalChannels = []; 
+        let currentChannelIndex = 0; 
 
-        // نەخشەیەک بۆ خوێندنەوە و جیاکردنەوەی فایلی M3U
         function parseM3U(data) {
             const lines = data.split('\n');
             const channels = [];
@@ -100,7 +113,6 @@
                 if (line.startsWith('#EXTINF:')) {
                     let name = line.split(',').pop() || "Unknown Channel";
                     
-                    // گەڕان بەدوای دێڕی داهاتوو کە بە http دەست پێ دەکات
                     let url = "";
                     for (let j = i + 1; j < lines.length; j++) {
                         let nextLine = lines[j].trim();
@@ -112,7 +124,6 @@
                     }
                     
                     if (url) {
-                        // چاککردنی هەڵەی لێرەدا: بەکارهێنانی .push لەجیاتی .append
                         channels.push({ name: name, url: url });
                     }
                 }
@@ -120,55 +131,88 @@
             return channels;
         }
 
-        // هێنانی داتا لە ڕێگەی ئینتەرنێتەوە (Fetch)
+        function playChannel(index) {
+            if (globalChannels.length === 0 || index < 0 || index >= globalChannels.length) return;
+            
+            currentChannelIndex = index;
+            const ch = globalChannels[index];
+            
+            const buttons = document.querySelectorAll('.channel-btn');
+            buttons.forEach(b => b.classList.remove('active'));
+            if (buttons[index]) {
+                buttons[index].classList.add('active');
+                buttons[index].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+
+            let type = 'application/x-mpegURL'; 
+            if(ch.url.includes('.mpd') || ch.url.includes('manifest')) {
+                type = 'application/dash+xml'; 
+            }
+            
+            player.src({ src: ch.url, type: type });
+            player.play().catch(e => {
+                console.log("خەتا لە لێدانی ڤیدیۆ:", e);
+            });
+        }
+
         fetch(M3U_URL)
             .then(response => {
                 if (!response.ok) {
-                    throw new Error("کێشەیەک لە ڕاژەکاردا هەیە (Server Error)");
+                    throw new Error("Server Error");
                 }
                 return response.text();
             })
             .then(data => {
-                const channels = parseM3U(data);
+                globalChannels = parseM3U(data);
                 listContainer.innerHTML = ""; 
                 listContainer.classList.remove('loading');
 
-                if(channels.length === 0) {
-                    listContainer.innerText = "هیچ چەناڵێکی ساغ لە فایلەکەدا نەدۆزرایەوە.";
+                if(globalChannels.length === 0) {
+                    listContainer.innerText = "هیچ چەناڵێک لە فایلەکەدا نەدۆزرایەوە.";
                     return;
                 }
 
-                channels.forEach((ch, index) => {
+                globalChannels.forEach((ch, index) => {
                     const btn = document.createElement('button');
                     btn.className = 'channel-btn';
-                    btn.innerText = ch.name;
+                    btn.innerHTML = `<span class="ch-num">${index + 1}</span> ${ch.name}`;
                     btn.onclick = function() {
-                        document.querySelectorAll('.channel-btn').forEach(b => b.classList.remove('active'));
-                        btn.classList.add('active');
-                        
-                        // دیاریکردنی جۆری فایلەکە بۆ لێدان
-                        let type = 'application/x-mpegURL'; // گونجاوە بۆ m3u8 و زۆربەی بەستەرەکانی Xtream
-                        if(ch.url.includes('.mpd') || ch.url.includes('manifest')) {
-                            type = 'application/dash+xml'; 
-                        }
-                        
-                        player.src({ src: ch.url, type: type });
-                        player.play().catch(e => {
-                            console.log("لێدانی ئۆتۆماتیکی ڕاگیرا یان بەستەرەکە کارناکات:", e);
-                        });
+                        playChannel(index);
                     };
                     listContainer.appendChild(btn);
                 });
 
-                // لێدانی چەناڵی یەکەم بە شێوەی ئۆتۆماتیکی ئەگەر هەبێت
-                if(channels.length > 0) {
-                    document.getElementsByClassName('channel-btn')[0].click();
+                if(globalChannels.length > 0) {
+                    playChannel(0);
                 }
             })
             .catch(err => {
                 listContainer.innerText = "خەتا لە هێنانی فایلەکە: " + err.message;
                 console.error(err);
             });
+
+        // 🎹 گوێگرتن لە کیبۆرد بۆ چوونە پێشەوە و گەڕانەوە
+        window.addEventListener('keydown', function(event) {
+            // ۱. ئەگەر دوگمەی سپەیس (Space) داگیرا -> بڕۆ کەنالی داهاتوو
+            if (event.key === ' ' || event.keyCode === 32) {
+                event.preventDefault(); 
+                let nextIndex = currentChannelIndex + 1;
+                if (nextIndex >= globalChannels.length) {
+                    nextIndex = 0; // گەڕانەوە بۆ سەرەتا
+                }
+                playChannel(nextIndex);
+            }
+            
+            // ۲. ئەگەر دوگمەی باکسبەیس (Backspace) داگیرا -> بگەڕێوە کەنالی پێشوو
+            if (event.key === 'Backspace' || event.keyCode === 8) {
+                event.preventDefault();
+                let prevIndex = currentChannelIndex - 1;
+                if (prevIndex < 0) {
+                    prevIndex = globalChannels.length - 1; // ئەگەر لە سەرەتا بوو، بچێتە کۆتا کەنال
+                }
+                playChannel(prevIndex);
+            }
+        });
     </script>
 </body>
 </html>
