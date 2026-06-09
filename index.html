@@ -75,18 +75,18 @@
 
         <div class="playlist-box">
             <h3>🗂️ لیستی کەنالەکان (باردەکرێت لە M3U)...</h3>
-            <div id="channels-list" class="loading">تکایە چاوەڕوان بە، چەناڵەکان لە گیت‌هەبەوە دەهێنرێن...</div>
+            <div id="channels-list" class="loading">تکایە چاوەڕوان بە، چەناڵەکان باردەکرێن...</div>
         </div>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/video.js/8.10.0/video.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/dashjs/4.7.4/dash.all.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/videojs-contrib-dash/5.1.1/videojs-contrib-dash.min.js"></script>
 
     <script>
-        // لێرەدا بەستەری فایلی M3U سەر گیت‌هەبەکەت دادەنێین
-        const M3U_URL = "https://serverblbas-svg.github.io/kamalblbas-TV---Web-App/";
+        // پێناسەکردنی بەستەری M3U بە شێوەی دەقی دروست
+        const M3U_URL = "https://xtream-ie.net/get.php?username=iptv2026&password=iptv2026&type=m3u_plus";
+        const EPG_URL = "https://xtream-ie.net/xmltv.php?username=iptv2026&password=iptv2026";
 
+        // ڕێکخستنی لێدەرەکە
         const player = videojs('tv-player', { fluid: true, autoplay: false, liveui: true });
         const listContainer = document.getElementById('channels-list');
 
@@ -98,9 +98,9 @@
             for (let i = 0; i < lines.length; i++) {
                 let line = lines[i].trim();
                 if (line.startsWith('#EXTINF:')) {
-                    let name = line.split(',').pop() || "Unknown";
+                    let name = line.split(',').pop() || "Unknown Channel";
                     
-                    // گەڕان بەدوای دێڕی داهاتوو کە بە http دەست پێ دەکات (لینکەکە)
+                    // گەڕان بەدوای دێڕی داهاتوو کە بە http دەست پێ دەکات
                     let url = "";
                     for (let j = i + 1; j < lines.length; j++) {
                         let nextLine = lines[j].trim();
@@ -108,11 +108,12 @@
                             url = nextLine;
                             break;
                         }
-                        if (nextLine.startsWith('#EXTINF:')) break; // ئەگەر گەیشتە کەنالێکی تر و لینک نەبوو
+                        if (nextLine.startsWith('#EXTINF:')) break; 
                     }
                     
                     if (url) {
-                        channels.append({ name: name, url: url });
+                        // چاککردنی هەڵەی لێرەدا: بەکارهێنانی .push لەجیاتی .append
+                        channels.push({ name: name, url: url });
                     }
                 }
             }
@@ -121,10 +122,15 @@
 
         // هێنانی داتا لە ڕێگەی ئینتەرنێتەوە (Fetch)
         fetch(M3U_URL)
-            .then(response => response.text())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error("کێشەیەک لە ڕاژەکاردا هەیە (Server Error)");
+                }
+                return response.text();
+            })
             .then(data => {
                 const channels = parseM3U(data);
-                listContainer.innerHTML = ""; // سڕینەوەی نامەی لۆدین
+                listContainer.innerHTML = ""; 
                 listContainer.classList.remove('loading');
 
                 if(channels.length === 0) {
@@ -140,24 +146,28 @@
                         document.querySelectorAll('.channel-btn').forEach(b => b.classList.remove('active'));
                         btn.classList.add('active');
                         
-                        let type = 'application/x-mpegURL'; // باو بۆ M3U8 یان TS
+                        // دیاریکردنی جۆری فایلەکە بۆ لێدان
+                        let type = 'application/x-mpegURL'; // گونجاوە بۆ m3u8 و زۆربەی بەستەرەکانی Xtream
                         if(ch.url.includes('.mpd') || ch.url.includes('manifest')) {
-                            type = 'application/dash+xml'; // باو بۆ MPD
+                            type = 'application/dash+xml'; 
                         }
                         
                         player.src({ src: ch.url, type: type });
-                        player.play();
+                        player.play().catch(e => {
+                            console.log("لێدانی ئۆتۆماتیکی ڕاگیرا یان بەستەرەکە کارناکات:", e);
+                        });
                     };
                     listContainer.appendChild(btn);
                 });
 
-                // لێدانی چەناڵی یەکەم بە شێوەی ئۆتۆماتیکی
+                // لێدانی چەناڵی یەکەم بە شێوەی ئۆتۆماتیکی ئەگەر هەبێت
                 if(channels.length > 0) {
                     document.getElementsByClassName('channel-btn')[0].click();
                 }
             })
             .catch(err => {
-                listContainer.innerText = "خەتا لە هێنانی فایلەکە: " + err;
+                listContainer.innerText = "خەتا لە هێنانی فایلەکە: " + err.message;
+                console.error(err);
             });
     </script>
 </body>
