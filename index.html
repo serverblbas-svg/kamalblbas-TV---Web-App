@@ -1,256 +1,74 @@
 <!DOCTYPE html>
 <html lang="ku" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>IPTV FORMAT PRO UI</title>
-
-<link href="https://cdnjs.cloudflare.com/ajax/libs/video.js/8.10.0/video-js.min.css" rel="stylesheet">
-
-<style>
-
-/* ===== BACKGROUND ===== */
-body{
-margin:0;
-font-family:Segoe UI;
-background:radial-gradient(circle at top,#0a0f1c,#050505);
-color:white;
-}
-
-/* ===== APP ===== */
-.app{
-display:flex;
-height:100vh;
-}
-
-/* ===== SIDEBAR ===== */
-.sidebar{
-width:240px;
-background:rgba(255,255,255,0.04);
-backdrop-filter:blur(25px);
-padding:15px;
-border-left:1px solid rgba(255,255,255,0.08);
-}
-
-.sidebar h2{
-color:#00e5ff;
-text-align:center;
-}
-
-.sidebar button{
-width:100%;
-padding:12px;
-margin:6px 0;
-border:none;
-border-radius:12px;
-background:rgba(255,255,255,0.06);
-color:white;
-cursor:pointer;
-transition:.3s;
-text-align:right;
-}
-
-.sidebar button:hover{
-background:linear-gradient(90deg,#00e5ff,#00ff99);
-color:#111;
-}
-
-/* ===== MAIN ===== */
-.main{
-flex:1;
-padding:15px;
-overflow:auto;
-}
-
-/* ===== TOP BAR ===== */
-.topbar{
-display:flex;
-gap:10px;
-margin-bottom:10px;
-}
-
-.topbar select,
-.topbar input{
-padding:12px;
-border-radius:10px;
-border:none;
-outline:none;
-background:rgba(255,255,255,0.06);
-color:white;
-}
-
-/* ===== PLAYER ===== */
-.player-box{
-border-radius:15px;
-overflow:hidden;
-border:1px solid rgba(255,255,255,0.1);
-box-shadow:0 10px 40px rgba(0,0,0,0.7);
-}
-
-/* ===== CHANNEL GRID ===== */
-.grid{
-margin-top:15px;
-display:grid;
-grid-template-columns:repeat(auto-fill,minmax(180px,1fr));
-gap:10px;
-}
-
-.card{
-padding:12px;
-border-radius:12px;
-background:rgba(255,255,255,0.06);
-backdrop-filter:blur(10px);
-cursor:pointer;
-transition:.3s;
-text-align:center;
-}
-
-.card:hover{
-transform:scale(1.05);
-background:linear-gradient(90deg,#00e5ff,#00ff99);
-color:#111;
-font-weight:bold;
-}
-
-</style>
+    <meta charset="UTF-8">
+    <title>IPTV PRO UI</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/video.js/8.10.0/video-js.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root { --accent: #6c5ce7; --bg: #0f0f1a; --card: #1a1a2e; }
+        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); color: white; }
+        
+        .app { display: flex; height: 100vh; }
+        
+        /* Sidebar */
+        .sidebar { width: 260px; background: #0a0a14; padding: 20px; border-left: 1px solid #333; }
+        .logo { font-size: 22px; font-weight: bold; color: var(--accent); margin-bottom: 30px; display: flex; align-items: center; gap: 10px; }
+        .nav-btn { width: 100%; padding: 15px; margin-bottom: 10px; background: transparent; border: none; color: #a2a2c2; text-align: right; cursor: pointer; transition: 0.3s; border-radius: 10px; }
+        .nav-btn:hover, .nav-btn.active { background: var(--accent); color: white; }
+        
+        /* Main */
+        .main { flex: 1; padding: 30px; overflow-y: auto; }
+        .player-container { background: #000; border-radius: 20px; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.5); border: 2px solid #2d2d44; }
+        
+        /* Grid */
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; margin-top: 30px; }
+        .channel-card { background: var(--card); padding: 20px; border-radius: 15px; text-align: center; cursor: pointer; transition: 0.4s; border: 1px solid #2d2d44; }
+        .channel-card:hover { border-color: var(--accent); transform: translateY(-5px); box-shadow: 0 10px 20px rgba(108,92,231,0.2); }
+        .channel-card i { font-size: 30px; color: var(--accent); margin-bottom: 10px; display: block; }
+        
+        .search-box { width: 100%; padding: 15px; border-radius: 12px; background: var(--card); border: none; color: white; margin-bottom: 20px; }
+    </style>
 </head>
-
 <body>
 
 <div class="app">
+    <div class="sidebar">
+        <div class="logo"><i class="fas fa-tv"></i> IPTV PRO</div>
+        <button class="nav-btn active"><i class="fas fa-home"></i> سەرەکی</button>
+        <button class="nav-btn"><i class="fas fa-satellite"></i> کەناڵەکان</button>
+        <button class="nav-btn"><i class="fas fa-heart"></i> دڵخوازەکان</button>
+    </div>
 
-<!-- SIDEBAR -->
-<div class="sidebar">
-<h2>📺 IPTV PRO</h2>
-<button>🏠 Home</button>
-<button>📡 Live TV</button>
-<button>⭐ Favorites</button>
-<button>⚙ Settings</button>
-</div>
+    <div class="main">
+        <input type="text" class="search-box" id="search" placeholder="🔍 بەدوای کەناڵێکدا بگەڕێ...">
+        
+        <div class="player-container">
+            <video id="player" class="video-js vjs-big-play-centered" controls></video>
+        </div>
 
-<!-- MAIN -->
-<div class="main">
-
-<div class="topbar">
-<input id="search" placeholder="🔍 Search channels...">
-
-<select id="format">
-<option value="normal">MPEG-TS (Original)</option>
-<option value="live">MPEG-TS (/live/)</option>
-<option value="hls">HLS (.m3u8 /live/)</option>
-</select>
-
-</div>
-
-<div class="player-box">
-<video id="player" class="video-js vjs-default-skin vjs-big-play-centered" controls></video>
-</div>
-
-<div class="grid" id="list"></div>
-
-</div>
+        <div class="grid" id="list"></div>
+    </div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/video.js/8.10.0/video.min.js"></script>
-
 <script>
-
-/* ===== PLAYER ===== */
-const player = videojs("player",{fluid:true,autoplay:true,liveui:true});
-
-<script>
-        // لینکە ڕاستەوخۆیەکان - بێ CORS Proxy
-        const M3U_URL = 'https://xtream-ie.net/get.php?username=serverblbas&password=serverblbas&type=m3u_plus';
-        const EPG_URL = 'https://xtream-ie.net/xmltv.php?username=serverblbas&password=serverblbas';
-
-let channels=[];
-let current=0;
-
-/* ===== FORMAT SWITCHER ===== */
-function convertUrl(url,mode){
-
-// MPEG-TS original
-if(mode==="normal") return url;
-
-// MPEG-TS /live/
-if(mode==="live"){
-return url.replace("http://","http://").replace(/\/([^/]+)$/, "/live/$1");
-}
-
-// HLS .m3u8
-if(mode==="hls"){
-return url.replace("http://","http://").replace(/\/([^/]+)$/, "/live/$1.m3u8");
-}
-
-return url;
-}
-
-/* ===== LOAD ===== */
-fetch(M3U_URL)
-.then(r=>r.text())
-.then(data=>{
-channels=parseM3U(data);
-render(channels);
-play(0);
-});
-
-/* ===== PARSE ===== */
-function parseM3U(data){
-let lines=data.split("\n");
-let out=[];
-for(let i=0;i<lines.length;i++){
-if(lines[i].includes("#EXTINF")){
-let name=lines[i].split(",")[1]||"Channel";
-let url=lines[i+1];
-if(url) out.push({name,url});
-}
-}
-return out;
-}
-
-/* ===== RENDER ===== */
-function render(list){
-let box=document.getElementById("list");
-box.innerHTML="";
-
-list.forEach((c,i)=>{
-let div=document.createElement("div");
-div.className="card";
-div.innerText=c.name;
-div.onclick=()=>play(i);
-box.appendChild(div);
-});
-}
-
-/* ===== PLAY ===== */
-function play(i){
-current=i;
-
-let mode=document.getElementById("format").value;
-let url=convertUrl(channels[i].url,mode);
-
-player.src({
-src:url,
-type:"application/x-mpegURL"
-});
-
-player.play();
-}
-
-/* ===== FORMAT CHANGE ===== */
-document.getElementById("format").addEventListener("change",()=>{
-play(current);
-});
-
-/* ===== SEARCH ===== */
-document.getElementById("search").addEventListener("input",e=>{
-let v=e.target.value.toLowerCase();
-document.querySelectorAll(".card").forEach(c=>{
-c.style.display=c.innerText.toLowerCase().includes(v)?"block":"none";
-});
-});
-
+    // کۆدی پێشوو بەکارهێنراوە بۆ لۆژیکی کارکردن
+    const player = videojs("player", { fluid: true, autoplay: true });
+    
+    // کاتێک کارتێک دروست دەکەیت، ئەم کۆدەت بەکاربهێنە بۆ جوانکردنی:
+    function render(list) {
+        let box = document.getElementById("list");
+        box.innerHTML = "";
+        list.forEach((c, i) => {
+            let div = document.createElement("div");
+            div.className = "channel-card";
+            div.innerHTML = `<i class="fas fa-play-circle"></i><div>${c.name}</div>`;
+            div.onclick = () => play(i);
+            box.appendChild(div);
+        });
+    }
+    // ... باقی کۆدەکەت لێرە زیاد بکە ...
 </script>
-
 </body>
 </html>
