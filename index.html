@@ -1,218 +1,210 @@
 <!DOCTYPE html>
 <html lang="ku" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>kamalblbas TV - Web App</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/video.js/8.10.0/video-js.min.css" rel="stylesheet">
-    <style>
-        body {
-            background-color: #11141a;
-            color: #ffffff;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            padding: 20px;
-            text-align: center;
-        }
-        h1 {
-            color: #00d2ff;
-            margin-bottom: 20px;
-            font-size: 28px;
-        }
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-        }
-        .video-holder {
-            background: #000;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.7);
-            border: 2px solid #222b36;
-            margin-bottom: 25px;
-        }
-        .playlist-box {
-            background: #1b222c;
-            border-radius: 10px;
-            padding: 15px;
-            border: 1px solid #2c3848;
-            max-height: 400px;
-            overflow-y: auto;
-        }
-        .channel-btn {
-            background: #242f3e;
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            margin: 5px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 16px;
-            transition: all 0.2s ease;
-            display: inline-block;
-            text-align: right;
-        }
-        .channel-btn:hover, .channel-btn.active {
-            background: #00d2ff;
-            color: #11141a;
-            font-weight: bold;
-            transform: scale(1.05);
-        }
-        .loading {
-            color: #aaa;
-            font-style: italic;
-        }
-        .ch-num {
-            color: #00d2ff;
-            font-weight: bold;
-            margin-left: 8px;
-            background: rgba(0, 0, 0, 0.3);
-            padding: 2px 6px; /* لێرەدا پادینگی زیادە چاککراوەتەوە */
-            border-radius: 4px;
-        }
-        .channel-btn.active .ch-num {
-            color: #11141a;
-            background: rgba(255, 255, 255, 0.5);
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IPTV Smarters PRO</title>
+
+<link href="https://cdnjs.cloudflare.com/ajax/libs/video.js/8.10.0/video-js.min.css" rel="stylesheet">
+
+<style>
+body{
+margin:0;
+font-family:Segoe UI;
+background:radial-gradient(circle at top,#0f2027,#050505);
+color:white;
+}
+
+/* APP */
+.app{display:flex;height:100vh;}
+
+/* SIDEBAR */
+.sidebar{
+width:220px;
+background:rgba(255,255,255,0.05);
+backdrop-filter:blur(20px);
+padding:15px;
+border-left:1px solid rgba(255,255,255,0.1);
+}
+
+.sidebar h2{color:#00e5ff;text-align:center;}
+
+.sidebar button{
+width:100%;
+padding:12px;
+margin:6px 0;
+border:none;
+border-radius:10px;
+background:transparent;
+color:white;
+cursor:pointer;
+transition:.3s;
+text-align:right;
+}
+
+.sidebar button:hover{
+background:linear-gradient(90deg,#00e5ff,#00ff99);
+color:#111;
+}
+
+/* MAIN */
+.main{flex:1;padding:15px;overflow:auto;}
+
+.top{
+display:flex;
+gap:10px;
+margin-bottom:10px;
+}
+
+.top input{
+flex:1;
+padding:12px;
+border-radius:10px;
+border:none;
+background:rgba(255,255,255,0.08);
+color:white;
+outline:none;
+}
+
+/* PLAYER */
+.player{
+border-radius:15px;
+overflow:hidden;
+border:1px solid rgba(255,255,255,0.1);
+}
+
+/* CHANNELS */
+.grid{
+margin-top:15px;
+display:grid;
+grid-template-columns:repeat(auto-fill,minmax(180px,1fr));
+gap:10px;
+}
+
+.card{
+padding:12px;
+border-radius:12px;
+background:rgba(255,255,255,0.06);
+cursor:pointer;
+transition:.3s;
+text-align:center;
+}
+
+.card:hover{
+transform:scale(1.05);
+background:linear-gradient(90deg,#00e5ff,#00ff99);
+color:#111;
+}
+</style>
 </head>
+
 <body>
 
-    <div class="container">
-        <h1>📺 سەرپەرشتیاری چەناڵەکانی kamalblbas TV</h1>
-        
-        <div class="video-holder">
-            <video id="tv-player" class="video-js vjs-default-skin vjs-16-9 vjs-big-play-centered" controls preload="auto">
-            </video>
-        </div>
+<div class="app">
 
-        <div class="playlist-box">
-            <h3>🗂️ لیستی کەنالەکان (باردەکرێت لە M3U)...</h3>
-            <div id="channels-list" class="loading">تکایە چاوەڕوان بە، چەناڵەکان باردەکرێن...</div>
-        </div>
-    </div>
+<!-- SIDEBAR -->
+<div class="sidebar">
+<h2>📺 IPTV PRO</h2>
+<button>🏠 Home</button>
+<button>📡 Live TV</button>
+<button onclick="loadFav()">⭐ Favorites</button>
+</div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/video.js/8.10.0/video.min.js"></script>
+<!-- MAIN -->
+<div class="main">
 
-    <script>
-        const M3U_URL = 'https://xtream-ie.net/get.php?username=serverblbas&password=serverblbas&type=m3u_plus';
-        const EPG_URL = 'https://xtream-ie.net/xmltv.php?username=serverblbas&password=serverblbas'; // لێرەدا کۆتیشنەکە چاککراوەتەوە
+<div class="top">
+<input id="search" placeholder="🔍 Search channels...">
+</div>
 
-        const player = videojs('tv-player', { fluid: true, autoplay: false, liveui: true });
-        const listContainer = document.getElementById('channels-list');
-        
-        let globalChannels = []; 
-        let currentChannelIndex = 0; 
+<div class="player">
+<video id="player" class="video-js vjs-default-skin vjs-big-play-centered" controls></video>
+</div>
 
-        function parseM3U(data) {
-            const lines = data.split('\n');
-            const channels = [];
-            
-            for (let i = 0; i < lines.length; i++) {
-                let line = lines[i].trim();
-                if (line.startsWith('#EXTINF:')) {
-                    let name = line.split(',').pop() || "Unknown Channel";
-                    
-                    let url = "";
-                    for (let j = i + 1; j < lines.length; j++) {
-                        let nextLine = lines[j].trim();
-                        if (nextLine.startsWith('http')) {
-                            url = nextLine;
-                            break;
-                        }
-                        if (nextLine.startsWith('#EXTINF:')) break; 
-                    }
-                    
-                    if (url) {
-                        channels.push({ name: name, url: url });
-                    }
-                }
-            }
-            return channels;
-        }
+<div class="grid" id="list"></div>
 
-        function playChannel(index) {
-            if (globalChannels.length === 0 || index < 0 || index >= globalChannels.length) return;
-            
-            currentChannelIndex = index;
-            const ch = globalChannels[index];
-            
-            const buttons = document.querySelectorAll('.channel-btn');
-            buttons.forEach(b => b.classList.remove('active'));
-            if (buttons[index]) {
-                buttons[index].classList.add('active');
-                buttons[index].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-            }
+</div>
+</div>
 
-            let type = 'application/x-mpegURL'; 
-            if(ch.url.includes('.mpd') || ch.url.includes('manifest')) {
-                type = 'application/dash+xml'; 
-            }
-            
-            player.src({ src: ch.url, type: type });
-            player.play().catch(e => {
-                console.log("خەتا لە لێدانی ڤیدیۆ:", e);
-            });
-        }
+<script src="https://cdnjs.cloudflare.com/ajax/libs/video.js/8.10.0/video.min.js"></script>
 
-        fetch(M3U_URL)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error("Server Error");
-                }
-                return response.text();
-            })
-            .then(data => {
-                globalChannels = parseM3U(data);
-                listContainer.innerHTML = ""; 
-                listContainer.classList.remove('loading');
+<script>
+const player = videojs("player",{fluid:true,autoplay:true,liveui:true});
 
-                if(globalChannels.length === 0) {
-                    listContainer.innerText = "هیچ چەناڵێک لە فایلەکەدا نەدۆزرایەوە.";
-                    return;
-                }
+const M3U = "https://xtream-ie.net/get.php?username=serverblbas&password=serverblbas&type=m3u_plus";
 
-                globalChannels.forEach((ch, index) => {
-                    const btn = document.createElement('button');
-                    btn.className = 'channel-btn';
-                    btn.innerHTML = `<span class="ch-num">${index + 1}</span> ${ch.name}`;
-                    btn.onclick = function() {
-                        playChannel(index);
-                    };
-                    listContainer.appendChild(btn);
-                });
+let channels=[];
+let current=0;
+let favorites = JSON.parse(localStorage.getItem("fav")||"[]");
 
-                if(globalChannels.length > 0) {
-                    playChannel(0);
-                }
-            })
-            .catch(err => {
-                listContainer.innerText = "خەتا لە هێنانی فایلەکە: " + err.message;
-                console.error(err);
-            });
+fetch(M3U)
+.then(r=>r.text())
+.then(data=>{
+channels=parse(data);
+render(channels);
+play(0);
+});
 
-        // 🎹 گوێگرتن لە کیبۆرد بۆ چوونە پێشەوە و گەڕانەوە
-        window.addEventListener('keydown', function(event) {
-            // ۱. ئەگەر دوگمەی سپەیس (Space) داگیرا -> بڕۆ کەنالی داهاتوو
-            if (event.key === ' ' || event.keyCode === 32) {
-                event.preventDefault(); 
-                let nextIndex = currentChannelIndex + 1;
-                if (nextIndex >= globalChannels.length) {
-                    nextIndex = 0; // گەڕانەوە بۆ سەرەتا
-                }
-                playChannel(nextIndex);
-            }
-            
-            // ۲. ئەگەر دوگمەی باکسبەیس (Backspace) داگیرا -> بگەڕێوە کەنالی پێشوو
-            if (event.key === 'Backspace' || event.keyCode === 8) {
-                event.preventDefault();
-                let prevIndex = currentChannelIndex - 1;
-                if (prevIndex < 0) {
-                    prevIndex = globalChannels.length - 1; // ئەگەر لە سەرەتا بوو، بچێتە کۆتا کەنال
-                }
-                playChannel(prevIndex);
-            }
-        });
-    </script>
+function parse(data){
+let lines=data.split("\n");
+let out=[];
+for(let i=0;i<lines.length;i++){
+if(lines[i].includes("#EXTINF")){
+let name=lines[i].split(",")[1]||"Channel";
+let url=lines[i+1];
+if(url) out.push({name,url});
+}
+}
+return out;
+}
+
+function render(list){
+let box=document.getElementById("list");
+box.innerHTML="";
+
+list.forEach((c,i)=>{
+let div=document.createElement("div");
+div.className="card";
+div.innerHTML=`${c.name} ⭐`;
+
+div.onclick=()=>play(i);
+
+div.ondblclick=()=>{
+toggleFav(c);
+};
+
+box.appendChild(div);
+});
+}
+
+function play(i){
+current=i;
+player.src({src:channels[i].url,type:"application/x-mpegURL"});
+player.play();
+}
+
+/* SEARCH */
+document.getElementById("search").addEventListener("input",e=>{
+let v=e.target.value.toLowerCase();
+document.querySelectorAll(".card").forEach(c=>{
+c.style.display=c.innerText.toLowerCase().includes(v)?"block":"none";
+});
+});
+
+/* FAVORITES */
+function toggleFav(ch){
+if(!favorites.find(f=>f.name===ch.name)){
+favorites.push(ch);
+}else{
+favorites=favorites.filter(f=>f.name!==ch.name);
+}
+localStorage.setItem("fav",JSON.stringify(favorites));
+}
+
+function loadFav(){
+render(favorites);
+}
+</script>
+
 </body>
 </html>
