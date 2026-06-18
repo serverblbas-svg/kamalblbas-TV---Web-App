@@ -3,28 +3,30 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>IPTV Smarters PRO</title>
+<title>IPTV FORMAT PRO UI</title>
 
 <link href="https://cdnjs.cloudflare.com/ajax/libs/video.js/8.10.0/video-js.min.css" rel="stylesheet">
 
 <style>
+
+/* ===== BACKGROUND ===== */
 body{
 margin:0;
 font-family:Segoe UI;
-background:radial-gradient(circle at top,#0f2027,#050505);
+background:radial-gradient(circle at top,#0a0f1c,#050505);
 color:white;
 }
 
-/* APP LAYOUT */
+/* ===== APP ===== */
 .app{
 display:flex;
 height:100vh;
 }
 
-/* SIDEBAR */
+/* ===== SIDEBAR ===== */
 .sidebar{
 width:240px;
-background:rgba(255,255,255,0.05);
+background:rgba(255,255,255,0.04);
 backdrop-filter:blur(25px);
 padding:15px;
 border-left:1px solid rgba(255,255,255,0.08);
@@ -40,7 +42,7 @@ width:100%;
 padding:12px;
 margin:6px 0;
 border:none;
-border-radius:10px;
+border-radius:12px;
 background:rgba(255,255,255,0.06);
 color:white;
 cursor:pointer;
@@ -53,22 +55,22 @@ background:linear-gradient(90deg,#00e5ff,#00ff99);
 color:#111;
 }
 
-/* MAIN */
+/* ===== MAIN ===== */
 .main{
 flex:1;
 padding:15px;
 overflow:auto;
 }
 
-/* TOP BAR */
+/* ===== TOP BAR ===== */
 .topbar{
 display:flex;
 gap:10px;
 margin-bottom:10px;
 }
 
+.topbar select,
 .topbar input{
-flex:1;
 padding:12px;
 border-radius:10px;
 border:none;
@@ -77,7 +79,7 @@ background:rgba(255,255,255,0.06);
 color:white;
 }
 
-/* PLAYER */
+/* ===== PLAYER ===== */
 .player-box{
 border-radius:15px;
 overflow:hidden;
@@ -85,7 +87,7 @@ border:1px solid rgba(255,255,255,0.1);
 box-shadow:0 10px 40px rgba(0,0,0,0.7);
 }
 
-/* CHANNELS */
+/* ===== CHANNEL GRID ===== */
 .grid{
 margin-top:15px;
 display:grid;
@@ -109,6 +111,7 @@ background:linear-gradient(90deg,#00e5ff,#00ff99);
 color:#111;
 font-weight:bold;
 }
+
 </style>
 </head>
 
@@ -116,6 +119,7 @@ font-weight:bold;
 
 <div class="app">
 
+<!-- SIDEBAR -->
 <div class="sidebar">
 <h2>📺 IPTV PRO</h2>
 <button>🏠 Home</button>
@@ -124,10 +128,18 @@ font-weight:bold;
 <button>⚙ Settings</button>
 </div>
 
+<!-- MAIN -->
 <div class="main">
 
 <div class="topbar">
 <input id="search" placeholder="🔍 Search channels...">
+
+<select id="format">
+<option value="normal">MPEG-TS (Original)</option>
+<option value="live">MPEG-TS (/live/)</option>
+<option value="hls">HLS (.m3u8 /live/)</option>
+</select>
+
 </div>
 
 <div class="player-box">
@@ -143,17 +155,35 @@ font-weight:bold;
 
 <script>
 
-/* ===== YOUR LINKS ===== */
-const M3U_URL = "https://xtream-ie.net/get.php?username=serverblbas&password=serverblbas&type=m3u_plus";
-const EPG_URL = "https://xtream-ie.net/xmltv.php?username=serverblbas&password=serverblbas";
-
 /* ===== PLAYER ===== */
 const player = videojs("player",{fluid:true,autoplay:true,liveui:true});
+
+/* ===== M3U ===== */
+const M3U_URL = "https://xtream-ie.net/get.php?username=serverblbas&password=serverblbas&type=m3u_plus";
 
 let channels=[];
 let current=0;
 
-/* ===== LOAD M3U ===== */
+/* ===== FORMAT SWITCHER ===== */
+function convertUrl(url,mode){
+
+// MPEG-TS original
+if(mode==="normal") return url;
+
+// MPEG-TS /live/
+if(mode==="live"){
+return url.replace("http://","http://").replace(/\/([^/]+)$/, "/live/$1");
+}
+
+// HLS .m3u8
+if(mode==="hls"){
+return url.replace("http://","http://").replace(/\/([^/]+)$/, "/live/$1.m3u8");
+}
+
+return url;
+}
+
+/* ===== LOAD ===== */
 fetch(M3U_URL)
 .then(r=>r.text())
 .then(data=>{
@@ -162,11 +192,10 @@ render(channels);
 play(0);
 });
 
-/* ===== PARSE M3U ===== */
+/* ===== PARSE ===== */
 function parseM3U(data){
 let lines=data.split("\n");
 let out=[];
-
 for(let i=0;i<lines.length;i++){
 if(lines[i].includes("#EXTINF")){
 let name=lines[i].split(",")[1]||"Channel";
@@ -194,9 +223,22 @@ box.appendChild(div);
 /* ===== PLAY ===== */
 function play(i){
 current=i;
-player.src({src:channels[i].url,type:"application/x-mpegURL"});
+
+let mode=document.getElementById("format").value;
+let url=convertUrl(channels[i].url,mode);
+
+player.src({
+src:url,
+type:"application/x-mpegURL"
+});
+
 player.play();
 }
+
+/* ===== FORMAT CHANGE ===== */
+document.getElementById("format").addEventListener("change",()=>{
+play(current);
+});
 
 /* ===== SEARCH ===== */
 document.getElementById("search").addEventListener("input",e=>{
