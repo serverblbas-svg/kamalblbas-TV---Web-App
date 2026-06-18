@@ -3,98 +3,163 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>IPTV Smarters PRO</title>
+<title>IPTV Premium UI</title>
 
 <link href="https://cdnjs.cloudflare.com/ajax/libs/video.js/8.10.0/video-js.min.css" rel="stylesheet">
 
 <style>
+
+/* ===== GLOBAL ===== */
 body{
 margin:0;
 font-family:Segoe UI;
-background:radial-gradient(circle at top,#0f2027,#050505);
-color:white;
+background: radial-gradient(circle at top,#0a0f1c,#050505);
+color:#fff;
 }
 
-/* APP */
-.app{display:flex;height:100vh;}
+/* ===== APP ===== */
+.app{
+display:flex;
+height:100vh;
+}
 
-/* SIDEBAR */
+/* ===== SIDEBAR (NEW PREMIUM LOOK) ===== */
 .sidebar{
-width:220px;
-background:rgba(255,255,255,0.05);
-backdrop-filter:blur(20px);
-padding:15px;
-border-left:1px solid rgba(255,255,255,0.1);
+width:240px;
+background:rgba(255,255,255,0.04);
+backdrop-filter:blur(25px);
+border-left:1px solid rgba(255,255,255,0.08);
+padding:18px;
 }
 
-.sidebar h2{color:#00e5ff;text-align:center;}
+.sidebar h2{
+text-align:center;
+color:#00e5ff;
+letter-spacing:2px;
+}
 
-.sidebar button{
+.menu{
+margin-top:20px;
+}
+
+.menu button{
 width:100%;
-padding:12px;
-margin:6px 0;
+padding:14px;
+margin:8px 0;
 border:none;
-border-radius:10px;
-background:transparent;
+border-radius:14px;
+background:rgba(255,255,255,0.06);
 color:white;
 cursor:pointer;
 transition:.3s;
 text-align:right;
+font-size:15px;
 }
 
-.sidebar button:hover{
+.menu button:hover{
 background:linear-gradient(90deg,#00e5ff,#00ff99);
 color:#111;
+transform:translateX(-6px);
 }
 
-/* MAIN */
-.main{flex:1;padding:15px;overflow:auto;}
+/* ===== MAIN ===== */
+.main{
+flex:1;
+padding:20px;
+overflow:auto;
+}
 
-.top{
+/* TOP BAR */
+.topbar{
 display:flex;
 gap:10px;
-margin-bottom:10px;
+margin-bottom:15px;
 }
 
-.top input{
+.topbar input{
 flex:1;
-padding:12px;
-border-radius:10px;
+padding:14px;
+border-radius:12px;
 border:none;
-background:rgba(255,255,255,0.08);
-color:white;
 outline:none;
+background:rgba(255,255,255,0.06);
+color:white;
 }
 
-/* PLAYER */
-.player{
-border-radius:15px;
+/* ===== PLAYER ===== */
+.player-box{
+border-radius:18px;
 overflow:hidden;
 border:1px solid rgba(255,255,255,0.1);
+box-shadow:0 20px 60px rgba(0,0,0,0.7);
 }
 
-/* CHANNELS */
+/* ===== CHANNEL GRID ===== */
 .grid{
-margin-top:15px;
+margin-top:18px;
 display:grid;
-grid-template-columns:repeat(auto-fill,minmax(180px,1fr));
-gap:10px;
+grid-template-columns:repeat(auto-fill,minmax(190px,1fr));
+gap:12px;
 }
 
+/* ===== CHANNEL CARD (NEW STYLE) ===== */
 .card{
-padding:12px;
-border-radius:12px;
-background:rgba(255,255,255,0.06);
+position:relative;
+padding:16px;
+border-radius:16px;
+background:rgba(255,255,255,0.05);
+backdrop-filter:blur(15px);
 cursor:pointer;
-transition:.3s;
-text-align:center;
+transition:.35s;
+overflow:hidden;
+border:1px solid rgba(255,255,255,0.08);
 }
 
 .card:hover{
-transform:scale(1.05);
-background:linear-gradient(90deg,#00e5ff,#00ff99);
+transform:scale(1.06);
+background:linear-gradient(135deg,#00e5ff,#00ff99);
 color:#111;
+box-shadow:0 0 25px rgba(0,255,200,0.3);
 }
+
+/* LIVE BADGE */
+.live{
+position:absolute;
+top:10px;
+left:10px;
+background:red;
+padding:4px 10px;
+font-size:12px;
+border-radius:20px;
+animation:pulse 1s infinite;
+}
+
+@keyframes pulse{
+50%{opacity:0.4;}
+}
+
+/* CHANNEL LOGO (placeholder circle) */
+.logo{
+width:45px;
+height:45px;
+border-radius:50%;
+background:rgba(255,255,255,0.2);
+margin-bottom:10px;
+}
+
+/* TEXT */
+.name{
+font-size:15px;
+font-weight:bold;
+}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:6px;}
+::-webkit-scrollbar-thumb{
+background:#00e5ff;
+border-radius:10px;
+}
+
 </style>
 </head>
 
@@ -104,20 +169,25 @@ color:#111;
 
 <!-- SIDEBAR -->
 <div class="sidebar">
-<h2>📺 IPTV PRO</h2>
+<h2>📺 IPTV</h2>
+
+<div class="menu">
 <button>🏠 Home</button>
 <button>📡 Live TV</button>
-<button onclick="loadFav()">⭐ Favorites</button>
+<button>🎬 Movies</button>
+<button>⭐ Favorites</button>
+<button>⚙ Settings</button>
+</div>
 </div>
 
 <!-- MAIN -->
 <div class="main">
 
-<div class="top">
+<div class="topbar">
 <input id="search" placeholder="🔍 Search channels...">
 </div>
 
-<div class="player">
+<div class="player-box">
 <video id="player" class="video-js vjs-default-skin vjs-big-play-centered" controls></video>
 </div>
 
@@ -129,13 +199,13 @@ color:#111;
 <script src="https://cdnjs.cloudflare.com/ajax/libs/video.js/8.10.0/video.min.js"></script>
 
 <script>
+
 const player = videojs("player",{fluid:true,autoplay:true,liveui:true});
 
 const M3U = "https://xtream-ie.net/get.php?username=serverblbas&password=serverblbas&type=m3u_plus";
 
 let channels=[];
 let current=0;
-let favorites = JSON.parse(localStorage.getItem("fav")||"[]");
 
 fetch(M3U)
 .then(r=>r.text())
@@ -165,14 +235,14 @@ box.innerHTML="";
 list.forEach((c,i)=>{
 let div=document.createElement("div");
 div.className="card";
-div.innerHTML=`${c.name} ⭐`;
+
+div.innerHTML=`
+<div class="live">LIVE</div>
+<div class="logo"></div>
+<div class="name">${c.name}</div>
+`;
 
 div.onclick=()=>play(i);
-
-div.ondblclick=()=>{
-toggleFav(c);
-};
-
 box.appendChild(div);
 });
 }
@@ -191,19 +261,6 @@ c.style.display=c.innerText.toLowerCase().includes(v)?"block":"none";
 });
 });
 
-/* FAVORITES */
-function toggleFav(ch){
-if(!favorites.find(f=>f.name===ch.name)){
-favorites.push(ch);
-}else{
-favorites=favorites.filter(f=>f.name!==ch.name);
-}
-localStorage.setItem("fav",JSON.stringify(favorites));
-}
-
-function loadFav(){
-render(favorites);
-}
 </script>
 
 </body>
