@@ -3,69 +3,60 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>IPTV Premium UI</title>
+<title>IPTV Smarters PRO</title>
 
 <link href="https://cdnjs.cloudflare.com/ajax/libs/video.js/8.10.0/video-js.min.css" rel="stylesheet">
 
 <style>
-
-/* ===== GLOBAL ===== */
 body{
 margin:0;
 font-family:Segoe UI;
-background: radial-gradient(circle at top,#0a0f1c,#050505);
-color:#fff;
+background:radial-gradient(circle at top,#0f2027,#050505);
+color:white;
 }
 
-/* ===== APP ===== */
+/* APP LAYOUT */
 .app{
 display:flex;
 height:100vh;
 }
 
-/* ===== SIDEBAR (NEW PREMIUM LOOK) ===== */
+/* SIDEBAR */
 .sidebar{
 width:240px;
-background:rgba(255,255,255,0.04);
+background:rgba(255,255,255,0.05);
 backdrop-filter:blur(25px);
+padding:15px;
 border-left:1px solid rgba(255,255,255,0.08);
-padding:18px;
 }
 
 .sidebar h2{
-text-align:center;
 color:#00e5ff;
-letter-spacing:2px;
+text-align:center;
 }
 
-.menu{
-margin-top:20px;
-}
-
-.menu button{
+.sidebar button{
 width:100%;
-padding:14px;
-margin:8px 0;
+padding:12px;
+margin:6px 0;
 border:none;
-border-radius:14px;
+border-radius:10px;
 background:rgba(255,255,255,0.06);
 color:white;
 cursor:pointer;
 transition:.3s;
 text-align:right;
-font-size:15px;
 }
 
-.menu button:hover{
+.sidebar button:hover{
 background:linear-gradient(90deg,#00e5ff,#00ff99);
 color:#111;
-transform:translateX(-6px);
 }
 
-/* ===== MAIN ===== */
+/* MAIN */
 .main{
 flex:1;
-padding:20px;
+padding:15px;
 overflow:auto;
 }
 
@@ -73,93 +64,51 @@ overflow:auto;
 .topbar{
 display:flex;
 gap:10px;
-margin-bottom:15px;
+margin-bottom:10px;
 }
 
 .topbar input{
 flex:1;
-padding:14px;
-border-radius:12px;
+padding:12px;
+border-radius:10px;
 border:none;
 outline:none;
 background:rgba(255,255,255,0.06);
 color:white;
 }
 
-/* ===== PLAYER ===== */
+/* PLAYER */
 .player-box{
-border-radius:18px;
+border-radius:15px;
 overflow:hidden;
 border:1px solid rgba(255,255,255,0.1);
-box-shadow:0 20px 60px rgba(0,0,0,0.7);
+box-shadow:0 10px 40px rgba(0,0,0,0.7);
 }
 
-/* ===== CHANNEL GRID ===== */
+/* CHANNELS */
 .grid{
-margin-top:18px;
+margin-top:15px;
 display:grid;
-grid-template-columns:repeat(auto-fill,minmax(190px,1fr));
-gap:12px;
+grid-template-columns:repeat(auto-fill,minmax(180px,1fr));
+gap:10px;
 }
 
-/* ===== CHANNEL CARD (NEW STYLE) ===== */
 .card{
-position:relative;
-padding:16px;
-border-radius:16px;
-background:rgba(255,255,255,0.05);
-backdrop-filter:blur(15px);
+padding:12px;
+border-radius:12px;
+background:rgba(255,255,255,0.06);
+backdrop-filter:blur(10px);
 cursor:pointer;
-transition:.35s;
-overflow:hidden;
-border:1px solid rgba(255,255,255,0.08);
+transition:.3s;
+text-align:center;
 }
 
 .card:hover{
-transform:scale(1.06);
-background:linear-gradient(135deg,#00e5ff,#00ff99);
+transform:scale(1.05);
+background:linear-gradient(90deg,#00e5ff,#00ff99);
 color:#111;
-box-shadow:0 0 25px rgba(0,255,200,0.3);
-}
-
-/* LIVE BADGE */
-.live{
-position:absolute;
-top:10px;
-left:10px;
-background:red;
-padding:4px 10px;
-font-size:12px;
-border-radius:20px;
-animation:pulse 1s infinite;
-}
-
-@keyframes pulse{
-50%{opacity:0.4;}
-}
-
-/* CHANNEL LOGO (placeholder circle) */
-.logo{
-width:45px;
-height:45px;
-border-radius:50%;
-background:rgba(255,255,255,0.2);
-margin-bottom:10px;
-}
-
-/* TEXT */
-.name{
-font-size:15px;
 font-weight:bold;
 }
-
-/* SCROLLBAR */
-::-webkit-scrollbar{width:6px;}
-::-webkit-scrollbar-thumb{
-background:#00e5ff;
-border-radius:10px;
-}
-
 </style>
 </head>
 
@@ -167,20 +116,14 @@ border-radius:10px;
 
 <div class="app">
 
-<!-- SIDEBAR -->
 <div class="sidebar">
-<h2>📺 IPTV</h2>
-
-<div class="menu">
+<h2>📺 IPTV PRO</h2>
 <button>🏠 Home</button>
 <button>📡 Live TV</button>
-<button>🎬 Movies</button>
 <button>⭐ Favorites</button>
 <button>⚙ Settings</button>
 </div>
-</div>
 
-<!-- MAIN -->
 <div class="main">
 
 <div class="topbar">
@@ -200,24 +143,30 @@ border-radius:10px;
 
 <script>
 
-const player = videojs("player",{fluid:true,autoplay:true,liveui:true});
+/* ===== YOUR LINKS ===== */
+const M3U_URL = "https://xtream-ie.net/get.php?username=serverblbas&password=serverblbas&type=m3u_plus";
+const EPG_URL = "https://xtream-ie.net/xmltv.php?username=serverblbas&password=serverblbas";
 
-const M3U = "https://xtream-ie.net/get.php?username=serverblbas&password=serverblbas&type=m3u_plus";
+/* ===== PLAYER ===== */
+const player = videojs("player",{fluid:true,autoplay:true,liveui:true});
 
 let channels=[];
 let current=0;
 
-fetch(M3U)
+/* ===== LOAD M3U ===== */
+fetch(M3U_URL)
 .then(r=>r.text())
 .then(data=>{
-channels=parse(data);
+channels=parseM3U(data);
 render(channels);
 play(0);
 });
 
-function parse(data){
+/* ===== PARSE M3U ===== */
+function parseM3U(data){
 let lines=data.split("\n");
 let out=[];
+
 for(let i=0;i<lines.length;i++){
 if(lines[i].includes("#EXTINF")){
 let name=lines[i].split(",")[1]||"Channel";
@@ -228,6 +177,7 @@ if(url) out.push({name,url});
 return out;
 }
 
+/* ===== RENDER ===== */
 function render(list){
 let box=document.getElementById("list");
 box.innerHTML="";
@@ -235,25 +185,20 @@ box.innerHTML="";
 list.forEach((c,i)=>{
 let div=document.createElement("div");
 div.className="card";
-
-div.innerHTML=`
-<div class="live">LIVE</div>
-<div class="logo"></div>
-<div class="name">${c.name}</div>
-`;
-
+div.innerText=c.name;
 div.onclick=()=>play(i);
 box.appendChild(div);
 });
 }
 
+/* ===== PLAY ===== */
 function play(i){
 current=i;
 player.src({src:channels[i].url,type:"application/x-mpegURL"});
 player.play();
 }
 
-/* SEARCH */
+/* ===== SEARCH ===== */
 document.getElementById("search").addEventListener("input",e=>{
 let v=e.target.value.toLowerCase();
 document.querySelectorAll(".card").forEach(c=>{
